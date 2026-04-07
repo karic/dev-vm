@@ -1,0 +1,27 @@
+---
+- name: Update apt cache
+  ansible.builtin.apt:
+    update_cache: yes
+    cache_valid_time: 3600
+
+- name: Install base packages
+  ansible.builtin.apt:
+    name: "{{ base_packages }}"
+    state: present
+
+- name: Ensure en_US.UTF-8 locale exists
+  community.general.locale_gen:
+    name: en_US.UTF-8
+    state: present
+
+- name: Set default locale
+  ansible.builtin.copy:
+    dest: /etc/default/locale
+    content: |
+      LANG=en_US.UTF-8
+      LC_ALL=en_US.UTF-8
+    mode: "0644"
+
+- name: Clean apt cache
+  ansible.builtin.apt:
+    autoclean: yes
