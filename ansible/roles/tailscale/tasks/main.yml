@@ -1,0 +1,34 @@
+---
+- name: Install Tailscale GPG key
+  ansible.builtin.shell:
+    cmd: curl -fsSL https://pkgs.tailscale.com/stable/ubuntu/noble.noarmor.gpg | tee /usr/share/keyrings/tailscale-archive-keyring.gpg > /dev/null
+    creates: /usr/share/keyrings/tailscale-archive-keyring.gpg
+
+- name: Add Tailscale apt repository
+  ansible.builtin.apt_repository:
+    repo: "deb [signed-by=/usr/share/keyrings/tailscale-archive-keyring.gpg] https://pkgs.tailscale.com/stable/ubuntu noble main"
+    filename: tailscale
+    state: present
+
+- name: Install Tailscale
+  ansible.builtin.apt:
+    name: tailscale
+    state: present
+    update_cache: yes
+
+- name: Start tailscaled daemon (Docker)
+  ansible.builtin.shell:
+    cmd: tailscaled --state=/var/lib/tailscale/tailscaled.state --socket=/var/run/tailscale/tailscaled.sock &
+  when: ansible_virtualization_type == "docker"
+
+- name: Enable tailscaled service (non-Docker)
+  ansible.builtin.systemd:
+    name: tailscaled
+    enabled: yes
+    state: started
+  when: ansible_virtualization_type != "docker"
+
+- name: Join tailnet
+  ansible.builtin.shell:
+    cmd: tailscale up --auth-key={{ tailscale_auth_key }} --ssh
+  when: tailscale_auth_key is defined and tailscale_auth_key | length > 0

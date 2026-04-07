@@ -8,3 +8,4 @@
     - base
     - user
     - ssh
+    - tailscale
