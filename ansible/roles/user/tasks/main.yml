@@ -1,0 +1,23 @@
+---
+- name: Create dev user
+  ansible.builtin.user:
+    name: "{{ dev_username }}"
+    shell: "{{ dev_shell }}"
+    create_home: yes
+    groups: sudo
+    append: yes
+
+- name: Allow passwordless sudo for dev user
+  ansible.builtin.copy:
+    dest: "/etc/sudoers.d/{{ dev_username }}"
+    content: "{{ dev_username }} ALL=(ALL) NOPASSWD:ALL\n"
+    mode: "0440"
+    validate: "visudo -cf %s"
+
+- name: Create .ssh directory
+  ansible.builtin.file:
+    path: "/home/{{ dev_username }}/.ssh"
+    state: directory
+    owner: "{{ dev_username }}"
+    group: "{{ dev_username }}"
+    mode: "0700"
