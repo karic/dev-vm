@@ -1,0 +1,11 @@
+dev_username: dev
+dev_shell: /bin/bash
+base_packages:
+  - curl
+  - wget
+  - git
+  - mosh
+  - ca-certificates
+  - locales
+  - openssh-server
+  - sudo
