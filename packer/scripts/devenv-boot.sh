@@ -3,24 +3,28 @@ set -euo pipefail
 
 echo "=== devenv: reading cloud-init user-data ==="
 
-# Read secrets from cloud-init instance metadata
-TAILSCALE_AUTH_KEY=$(cloud-init query userdata | python3 -c "import sys,yaml; print(yaml.safe_load(sys.stdin).get('tailscale_auth_key',''))" 2>/dev/null || echo "")
-SSH_AUTHORIZED_KEYS=$(cloud-init query userdata | python3 -c "import sys,yaml; print(yaml.safe_load(sys.stdin).get('ssh_authorized_keys',''))" 2>/dev/null || echo "")
+# Read secrets from cloud-init instance metadata and build JSON extra-vars
+EXTRA_VARS=$(python3 -c "
+import json, subprocess, sys, yaml
 
-EXTRA_VARS=""
+try:
+    userdata = subprocess.check_output(['cloud-init', 'query', 'userdata'], text=True)
+    data = yaml.safe_load(userdata) or {}
+except Exception:
+    data = {}
 
-if [ -n "${TAILSCALE_AUTH_KEY}" ]; then
-  EXTRA_VARS="${EXTRA_VARS} tailscale_auth_key=${TAILSCALE_AUTH_KEY}"
-fi
-
-if [ -n "${SSH_AUTHORIZED_KEYS}" ]; then
-  EXTRA_VARS="${EXTRA_VARS} ssh_authorized_keys=${SSH_AUTHORIZED_KEYS}"
-fi
+v = {}
+k = data.get('tailscale_auth_key', '')
+if k: v['tailscale_auth_key'] = k
+k = data.get('ssh_authorized_keys', '')
+if k: v['ssh_authorized_keys'] = k
+print(json.dumps(v))
+")
 
 echo "=== devenv: running ansible provisioning ==="
 
 ansible-playbook /etc/ansible/devenv/local.yml \
   -i /etc/ansible/devenv/inventory/localhost.ini \
-  ${EXTRA_VARS:+--extra-vars "$EXTRA_VARS"}
+  --extra-vars "$EXTRA_VARS"
 
 echo "=== devenv: provisioning complete ==="

@@ -1,3 +1,5 @@
+.env
+*.env
 *.retry
 *.pyc
 __pycache__/

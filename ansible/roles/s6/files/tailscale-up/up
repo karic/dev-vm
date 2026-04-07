@@ -1,2 +1,3 @@
-#\!/command/execlineb -P
+#!/command/execlineb -P
+importas -u TAILSCALE_AUTH_KEY TAILSCALE_AUTH_KEY
 foreground { tailscale up --auth-key=${TAILSCALE_AUTH_KEY} --ssh }

@@ -3,19 +3,24 @@ set -euo pipefail
 
 echo "=== devenv: running ansible provisioning ==="
 
-EXTRA_VARS=""
+# Build extra-vars as JSON to handle multi-line values safely
+EXTRA_VARS="{}"
 
-if [ -n "${TAILSCALE_AUTH_KEY:-}" ]; then
-  EXTRA_VARS="${EXTRA_VARS} tailscale_auth_key=${TAILSCALE_AUTH_KEY}"
-fi
-
-if [ -n "${SSH_AUTHORIZED_KEYS:-}" ]; then
-  EXTRA_VARS="${EXTRA_VARS} ssh_authorized_keys=${SSH_AUTHORIZED_KEYS}"
+if [ -n "${TAILSCALE_AUTH_KEY:-}" ] || [ -n "${SSH_AUTHORIZED_KEYS:-}" ]; then
+  EXTRA_VARS=$(python3 -c "
+import json, os
+v = {}
+k = os.environ.get('TAILSCALE_AUTH_KEY', '')
+if k: v['tailscale_auth_key'] = k
+k = os.environ.get('SSH_AUTHORIZED_KEYS', '')
+if k: v['ssh_authorized_keys'] = k
+print(json.dumps(v))
+")
 fi
 
 ansible-playbook /etc/ansible/devenv/local.yml \
   -i /etc/ansible/devenv/inventory/localhost.ini \
-  ${EXTRA_VARS:+--extra-vars "$EXTRA_VARS"}
+  --extra-vars "$EXTRA_VARS"
 
 echo "=== devenv: provisioning complete, starting s6 ==="
 
