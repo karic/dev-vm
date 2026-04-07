@@ -1,0 +1,23 @@
+---
+- name: Deploy hardened sshd_config
+  ansible.builtin.template:
+    src: sshd_config.j2
+    dest: /etc/ssh/sshd_config
+    owner: root
+    group: root
+    mode: "0644"
+    validate: "sshd -t -f %s"
+
+- name: Ensure ssh host keys exist
+  ansible.builtin.command:
+    cmd: ssh-keygen -A
+    creates: /etc/ssh/ssh_host_ed25519_key
+
+- name: Write authorized_keys for dev user
+  ansible.builtin.copy:
+    dest: "/home/{{ dev_username }}/.ssh/authorized_keys"
+    content: "{{ ssh_authorized_keys }}\n"
+    owner: "{{ dev_username }}"
+    group: "{{ dev_username }}"
+    mode: "0600"
+  when: ssh_authorized_keys is defined and ssh_authorized_keys | length > 0
