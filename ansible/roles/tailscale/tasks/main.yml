@@ -16,18 +16,16 @@
     state: present
     update_cache: yes
 
-- name: Enable tailscaled service (non-Docker)
+- name: Enable tailscaled service
   ansible.builtin.systemd:
     name: tailscaled
     enabled: yes
     state: started
-  when: ansible_virtualization_type != "docker"
 
-- name: Join tailnet (non-Docker, s6 handles this in Docker)
+- name: Join tailnet
   ansible.builtin.shell:
     cmd: tailscale up --auth-key={{ tailscale_auth_key }} --ssh
   no_log: true
   when:
     - tailscale_auth_key is defined
     - tailscale_auth_key | length > 0
-    - ansible_virtualization_type != "docker"
