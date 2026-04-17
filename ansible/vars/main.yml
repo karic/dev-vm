@@ -9,3 +9,4 @@ base_packages:
   - locales
   - openssh-server
   - sudo
+  - xz-utils

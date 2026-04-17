@@ -1,4 +1,10 @@
 ---
+- name: Ensure sshd privilege separation directory exists
+  ansible.builtin.file:
+    path: /run/sshd
+    state: directory
+    mode: "0755"
+
 - name: Deploy hardened sshd_config
   ansible.builtin.template:
     src: sshd_config.j2
