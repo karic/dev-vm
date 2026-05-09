@@ -21,3 +21,24 @@
     owner: "{{ dev_username }}"
     group: "{{ dev_username }}"
     mode: "0700"
+
+- name: Create ~/.config directory
+  ansible.builtin.file:
+    path: "/home/{{ dev_username }}/.config"
+    state: directory
+    owner: "{{ dev_username }}"
+    group: "{{ dev_username }}"
+    mode: "0755"
+
+- name: Create ~/.local/share directory
+  ansible.builtin.file:
+    path: "/home/{{ dev_username }}/.local/share"
+    state: directory
+    owner: "{{ dev_username }}"
+    group: "{{ dev_username }}"
+    mode: "0755"
+
+- name: Enable user lingering for systemd user services
+  ansible.builtin.command:
+    cmd: loginctl enable-linger "{{ dev_username }}"
+  changed_when: false
