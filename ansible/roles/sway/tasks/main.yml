@@ -26,6 +26,10 @@
       [terminal]
       vt = 1
 
+      [default_session]
+      command = "env WLR_BACKENDS=drm sway"
+      user = "{{ dev_username }}"
+
       [initial_session]
       command = "env WLR_BACKENDS=drm sway"
       user = "{{ dev_username }}"
