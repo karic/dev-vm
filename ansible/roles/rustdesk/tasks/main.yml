@@ -1,0 +1,48 @@
+---
+- name: Get latest RustDesk release info
+  ansible.builtin.uri:
+    url: https://api.github.com/repos/rustdesk/rustdesk/releases/latest
+    return_content: true
+    headers:
+      Accept: application/vnd.github.v3+json
+  register: rustdesk_release
+
+- name: Set RustDesk version facts
+  ansible.builtin.set_fact:
+    rustdesk_version: "{{ rustdesk_release.json.tag_name | regex_replace('^v', '') }}"
+    rustdesk_tag: "{{ rustdesk_release.json.tag_name }}"
+
+- name: Download RustDesk .deb
+  ansible.builtin.get_url:
+    url: "https://github.com/rustdesk/rustdesk/releases/download/{{ rustdesk_tag }}/rustdesk-{{ rustdesk_version }}-x86_64.deb"
+    dest: /tmp/rustdesk.deb
+    mode: "0644"
+
+- name: Install RustDesk
+  ansible.builtin.apt:
+    deb: /tmp/rustdesk.deb
+    state: present
+
+- name: Remove downloaded .deb
+  ansible.builtin.file:
+    path: /tmp/rustdesk.deb
+    state: absent
+
+- name: Create RustDesk config directory
+  ansible.builtin.file:
+    path: "/home/{{ dev_username }}/.config/rustdesk"
+    state: directory
+    owner: "{{ dev_username }}"
+    group: "{{ dev_username }}"
+    mode: "0700"
+
+- name: Configure RustDesk (no relay server)
+  ansible.builtin.copy:
+    dest: "/home/{{ dev_username }}/.config/rustdesk/RustDesk.toml"
+    owner: "{{ dev_username }}"
+    group: "{{ dev_username }}"
+    mode: "0600"
+    content: |
+      [options]
+      relay-server = ""
+      enable-audio = false
