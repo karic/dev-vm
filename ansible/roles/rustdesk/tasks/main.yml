@@ -45,6 +45,18 @@
     state: absent
   when: rustdesk_installed.stdout != rustdesk_version
 
+- name: Install RustDesk system tray dependency
+  ansible.builtin.apt:
+    name: libayatana-appindicator3-1
+    state: present
+
+- name: Disable RustDesk system service (started by sway instead)
+  ansible.builtin.systemd:
+    name: rustdesk
+    enabled: false
+    state: stopped
+  failed_when: false
+
 - name: Create RustDesk config directory
   ansible.builtin.file:
     path: "/home/{{ dev_username }}/.config/rustdesk"
@@ -53,13 +65,14 @@
     group: "{{ dev_username }}"
     mode: "0700"
 
-- name: Configure RustDesk (no relay server)
+- name: Configure RustDesk options
   ansible.builtin.copy:
-    dest: "/home/{{ dev_username }}/.config/rustdesk/RustDesk.toml"
+    dest: "/home/{{ dev_username }}/.config/rustdesk/RustDesk2.toml"
     owner: "{{ dev_username }}"
     group: "{{ dev_username }}"
     mode: "0600"
     content: |
       [options]
-      relay-server = ""
-      enable-audio = false
+      direct-server = "Y"
+      direct-access-port = "21118"
+      enable-audio = "N"

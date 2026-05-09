@@ -27,11 +27,11 @@
       vt = 1
 
       [default_session]
-      command = "env WLR_BACKENDS=drm sway"
+      command = "env WLR_BACKENDS=headless WLR_LIBINPUT_NO_DEVICES=1 sway"
       user = "{{ dev_username }}"
 
       [initial_session]
-      command = "env WLR_BACKENDS=drm sway"
+      command = "env WLR_BACKENDS=headless WLR_LIBINPUT_NO_DEVICES=1 sway"
       user = "{{ dev_username }}"
     mode: "0644"
 
