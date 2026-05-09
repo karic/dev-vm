@@ -25,3 +25,4 @@
 - name: Clean apt cache
   ansible.builtin.apt:
     autoclean: yes
+  ignore_errors: yes
