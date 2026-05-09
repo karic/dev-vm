@@ -1,0 +1,22 @@
+---
+- hosts: localhost
+  connection: local
+  become: yes
+  vars:
+    dev_username: mkaric
+    dev_shell: /bin/bash
+    base_packages:
+      - curl
+      - wget
+      - git
+      - ca-certificates
+      - locales
+      - openssh-server
+      - sudo
+      - fonts-noto
+      - fonts-noto-color-emoji
+  roles:
+    - base
+    - user
+    - sway
+    - rustdesk
