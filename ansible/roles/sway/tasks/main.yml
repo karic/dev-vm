@@ -10,7 +10,6 @@
       - alacritty
       - greetd
       - pipewire
-      - pipewire-audio
       - wireplumber
       - xdg-desktop-portal-wlr
       - grim
@@ -33,42 +32,51 @@
 
       [initial_session]
       command = "env WLR_BACKENDS=drm sway"
-      user = "mkaric"
+      user = "{{ dev_username }}"
     mode: "0644"
 
-- name: Enable greetd
+- name: Add {{ dev_username }} to video and render groups for DRM/Wayland access
+  ansible.builtin.user:
+    name: "{{ dev_username }}"
+    groups:
+      - video
+      - render
+    append: yes
+
+- name: Enable and start greetd
   ansible.builtin.systemd:
     name: greetd
     enabled: yes
+    state: started
 
 - name: Create sway config directory
   ansible.builtin.file:
-    path: /home/mkaric/.config/sway
+    path: /home/{{ dev_username }}/.config/sway
     state: directory
-    owner: mkaric
-    group: mkaric
+    owner: "{{ dev_username }}"
+    group: "{{ dev_username }}"
     mode: "0755"
 
 - name: Deploy sway config
   ansible.builtin.copy:
     src: sway.conf
-    dest: /home/mkaric/.config/sway/config
-    owner: mkaric
-    group: mkaric
+    dest: /home/{{ dev_username }}/.config/sway/config
+    owner: "{{ dev_username }}"
+    group: "{{ dev_username }}"
     mode: "0644"
 
 - name: Create waybar config directory
   ansible.builtin.file:
-    path: /home/mkaric/.config/waybar
+    path: /home/{{ dev_username }}/.config/waybar
     state: directory
-    owner: mkaric
-    group: mkaric
+    owner: "{{ dev_username }}"
+    group: "{{ dev_username }}"
     mode: "0755"
 
 - name: Deploy waybar config
   ansible.builtin.copy:
     src: waybar.conf
-    dest: /home/mkaric/.config/waybar/config
-    owner: mkaric
-    group: mkaric
+    dest: /home/{{ dev_username }}/.config/waybar/config
+    owner: "{{ dev_username }}"
+    group: "{{ dev_username }}"
     mode: "0644"
