@@ -5,6 +5,7 @@
     return_content: true
     headers:
       Accept: application/vnd.github.v3+json
+    status_code: 200
   register: rustdesk_release
 
 - name: Set RustDesk version facts
@@ -12,21 +13,37 @@
     rustdesk_version: "{{ rustdesk_release.json.tag_name | regex_replace('^v', '') }}"
     rustdesk_tag: "{{ rustdesk_release.json.tag_name }}"
 
+- name: Assert release tag was returned
+  ansible.builtin.assert:
+    that:
+      - rustdesk_release.json.tag_name is defined
+      - rustdesk_release.json.tag_name | length > 0
+    fail_msg: "GitHub API did not return a valid tag_name — possible rate limiting"
+
+- name: Check installed RustDesk version
+  ansible.builtin.command:
+    cmd: dpkg-query -W -f='${Version}' rustdesk
+  register: rustdesk_installed
+  failed_when: false
+  changed_when: false
+
 - name: Download RustDesk .deb
   ansible.builtin.get_url:
     url: "https://github.com/rustdesk/rustdesk/releases/download/{{ rustdesk_tag }}/rustdesk-{{ rustdesk_version }}-x86_64.deb"
     dest: /tmp/rustdesk.deb
     mode: "0644"
+  when: rustdesk_installed.stdout != rustdesk_version
 
 - name: Install RustDesk
   ansible.builtin.apt:
     deb: /tmp/rustdesk.deb
-    state: present
+  when: rustdesk_installed.stdout != rustdesk_version
 
 - name: Remove downloaded .deb
   ansible.builtin.file:
     path: /tmp/rustdesk.deb
     state: absent
+  when: rustdesk_installed.stdout != rustdesk_version
 
 - name: Create RustDesk config directory
   ansible.builtin.file:
