@@ -1,0 +1,74 @@
+---
+- name: Install Sway and Wayland packages
+  ansible.builtin.apt:
+    name:
+      - sway
+      - swaylock
+      - swayidle
+      - waybar
+      - wofi
+      - alacritty
+      - greetd
+      - pipewire
+      - pipewire-audio
+      - wireplumber
+      - xdg-desktop-portal-wlr
+      - grim
+      - slurp
+      - wl-clipboard
+      - libnotify-bin
+      - mako-notifier
+    state: present
+
+- name: Configure greetd for autologin into sway
+  ansible.builtin.copy:
+    dest: /etc/greetd/config.toml
+    content: |
+      [terminal]
+      vt = 1
+
+      [default_session]
+      command = "agreety --cmd sway"
+      user = "greetd"
+
+      [initial_session]
+      command = "env WLR_BACKENDS=drm sway"
+      user = "mkaric"
+    mode: "0644"
+
+- name: Enable greetd
+  ansible.builtin.systemd:
+    name: greetd
+    enabled: yes
+
+- name: Create sway config directory
+  ansible.builtin.file:
+    path: /home/mkaric/.config/sway
+    state: directory
+    owner: mkaric
+    group: mkaric
+    mode: "0755"
+
+- name: Deploy sway config
+  ansible.builtin.copy:
+    src: sway.conf
+    dest: /home/mkaric/.config/sway/config
+    owner: mkaric
+    group: mkaric
+    mode: "0644"
+
+- name: Create waybar config directory
+  ansible.builtin.file:
+    path: /home/mkaric/.config/waybar
+    state: directory
+    owner: mkaric
+    group: mkaric
+    mode: "0755"
+
+- name: Deploy waybar config
+  ansible.builtin.copy:
+    src: waybar.conf
+    dest: /home/mkaric/.config/waybar/config
+    owner: mkaric
+    group: mkaric
+    mode: "0644"
