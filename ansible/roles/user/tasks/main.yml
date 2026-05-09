@@ -30,6 +30,14 @@
     group: "{{ dev_username }}"
     mode: "0755"
 
+- name: Create ~/.local directory
+  ansible.builtin.file:
+    path: "/home/{{ dev_username }}/.local"
+    state: directory
+    owner: "{{ dev_username }}"
+    group: "{{ dev_username }}"
+    mode: "0755"
+
 - name: Create ~/.local/share directory
   ansible.builtin.file:
     path: "/home/{{ dev_username }}/.local/share"
